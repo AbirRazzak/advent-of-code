@@ -1,12 +1,27 @@
 annotated-types==0.6.0
     # via pydantic
+black==23.11.0
+    # via -r ./requirements/requirements.in
+click==8.1.7
+    # via black
+mypy-extensions==1.0.0
+    # via black
+packaging==23.2
+    # via black
+pathspec==0.11.2
+    # via black
 pipdeptree==2.13.1
     # via -r ./requirements/requirements.in
+platformdirs==4.0.0
+    # via black
 pydantic==2.5.2
     # via -r ./requirements/requirements.in
 pydantic-core==2.14.5
     # via pydantic
+tomli==2.0.1
+    # via black
 typing-extensions==4.8.0
     # via
+    #   black
     #   pydantic
     #   pydantic-core
