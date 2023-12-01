@@ -10,7 +10,8 @@ class PuzzleInputRepository(abc.ABC):
 
 class OfflinePuzzleInputRepository(PuzzleInputRepository):
     def __init__(self):
-        self.puzzle_input_dir = "puzzle_input/offline_repo/data"
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.puzzle_input_dir = os.path.join(current_dir, "data")
 
     def get_puzzle_input(self, day: int, year: int = 2023) -> str:
         file_path = os.path.join(self.puzzle_input_dir, f"{year}", f"day_{day}.txt")
