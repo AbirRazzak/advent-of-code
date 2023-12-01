@@ -1,0 +1,34 @@
+#!/bin/bash -e
+
+# https://stackoverflow.com/a/246128
+# get current directory of script, regardless of how i'm being executed
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )/"
+PROJECT_ROOT="$(dirname "$DIR")"
+
+# pyenv won't do much without init
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+eval "$(pyenv init --path)"
+
+cd "${PROJECT_ROOT}"
+
+# Upgrade pip related things
+pip install --upgrade pip setuptools wheel
+
+# Upgrade pip-tools to make sure we have latest/greatest before regenerating.
+pip install --upgrade pip-tools
+
+# These should be paths relative to $PROJECT_ROOT,
+# otherwise pip-compile will include absolute paths from your dev machine.
+R_IN_PATH=./requirements/requirements.in
+R_OUT_PATH=./requirements.txt
+
+# pip-compile uses these txt files as an input if they exist, so make sure they don't.
+rm -rf "${R_OUT_PATH}"
+
+export PIP_INDEX_URL="https://${FURY_AUTH}@pypi.fury.io/picwell/"
+export PIP_EXTRA_INDEX_URL=https://pypi.org/simple/
+
+pip-compile --no-header --no-emit-index-url --rebuild --verbose \
+  --output-file "${R_OUT_PATH}" \
+  "${R_IN_PATH}"

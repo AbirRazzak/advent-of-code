@@ -1,0 +1,12 @@
+annotated-types==0.6.0
+    # via pydantic
+pipdeptree==2.13.1
+    # via -r ./requirements/requirements.in
+pydantic==2.5.2
+    # via -r ./requirements/requirements.in
+pydantic-core==2.14.5
+    # via pydantic
+typing-extensions==4.8.0
+    # via
+    #   pydantic
+    #   pydantic-core
