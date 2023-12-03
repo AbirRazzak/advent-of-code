@@ -27,6 +27,19 @@ class Game(BaseModel):
 
         return True
 
+    def min_cubes_required_in_power(self) -> int:
+        min_red = min_blue = min_green = 0
+
+        for r in self.rounds:
+            if r.red > min_red:
+                min_red = r.red
+            if r.blue > min_blue:
+                min_blue = r.blue
+            if r.green > min_green:
+                min_green = r.green
+
+        return min_red * min_blue * min_green
+
 
 class GameCollection(BaseModel):
     games: list[Game]
@@ -77,13 +90,21 @@ def main():
     game_collection = GameCollection.from_puzzle_input(puzzle_input=puzzle_input)
     print(game_collection)
 
-    sum = 0
+    print("Part 1 - Games Possible: ", end="")
+    sum_possible_game_ids = 0
     for g in game_collection.games:
         if g.is_game_possible(num_red=12, num_blue=14, num_green=13):
-            print(f"Game {g.id} is possible")
-            sum += g.id
+            print(f"{g.id} ", end="")
+            sum_possible_game_ids += g.id
+    print(f"\n{sum_possible_game_ids}")
 
-    print(sum)
+    print("Part 2 - Min Cubes Required: ", end="")
+    sum_min_cubes_powered = 0
+    for g in game_collection.games:
+        min_cubes_required_power = g.min_cubes_required_in_power()
+        sum_min_cubes_powered += min_cubes_required_power
+        print(f"{min_cubes_required_power} ", end="")
+    print(f"\n{sum_min_cubes_powered}")
 
 
 if __name__ == "__main__":
