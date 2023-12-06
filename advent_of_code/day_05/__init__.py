@@ -69,7 +69,7 @@ class Almanac(BaseModel):
 
         return Almanac(
             seeds=seeds,
-            seed_pairs=seed_pairs,
+            # seed_pairs=seed_pairs,
             seed_to_soil_map=almanac_lists[0],
             soil_to_fertilizer_map=almanac_lists[1],
             fertilizer_to_water_map=almanac_lists[2],
@@ -139,6 +139,7 @@ def main():
     print(
         f"Part 1 - Seed with lowest location: {almanac.get_lowest_location_with_a_seed()}"
     )
+
 
 if __name__ == "__main__":
     main()
