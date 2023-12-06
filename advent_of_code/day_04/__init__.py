@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from puzzle_input.offline_repo import OfflinePuzzleInputRepository
+from advent_of_code.puzzle_input.offline_repo import OfflinePuzzleInputRepository
 
 
 class ScratchCard(BaseModel):
@@ -70,13 +70,30 @@ class ScratchCardPile(BaseModel):
 
         return ScratchCardPile(cards=cards)
 
-    def get_total_points(self):
+    def get_total_points(self) -> int:
+        """
+        This is the solution to part 1. This method is not used in part 2.
+        :return: The sum of all the points earned by all the cards in this pile.
+        """
+
         total_points = 0
 
         for card in self.cards:
             total_points += card.get_winning_card_numbers_points()
 
         return total_points
+
+    def get_total_scratch_cards(self) -> int:
+        """
+        This is the solution to part 2. This method is not used in part 1.
+        :return: The total number of scratch cards (including the original 202, plus the duplicate winning cards).
+        """
+
+        total = len(self.cards)
+
+        duplicate_cards_num_by_id: dict[int, int] = {}
+
+        return total
 
 
 def main():
@@ -87,6 +104,7 @@ def main():
     print(scratch_card_pile)
 
     print(f"Part 1 - Total points: {scratch_card_pile.get_total_points()}")
+    print(f"Part 2 - Total cards: {scratch_card_pile.get_total_scratch_cards()}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import pytest
 
-from day_01 import CalibrationDocumentLineItem
+from advent_of_code.day_01 import CalibrationDocumentLineItem
 
 
 @pytest.mark.parametrize(

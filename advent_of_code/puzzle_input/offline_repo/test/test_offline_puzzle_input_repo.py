@@ -1,4 +1,4 @@
-from puzzle_input.offline_repo import OfflinePuzzleInputRepository
+from advent_of_code.puzzle_input.offline_repo import OfflinePuzzleInputRepository
 
 
 def test_get_puzzle_input():

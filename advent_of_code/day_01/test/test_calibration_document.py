@@ -1,4 +1,4 @@
-from day_01 import CalibrationDocument, CalibrationDocumentLineItem
+from advent_of_code.day_01 import CalibrationDocument, CalibrationDocumentLineItem
 
 
 def test_from_puzzle_input():

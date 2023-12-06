@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from puzzle_input.offline_repo import OfflinePuzzleInputRepository
+from advent_of_code.puzzle_input.offline_repo import OfflinePuzzleInputRepository
 
 
 class CalibrationDocumentLineItem(BaseModel):
