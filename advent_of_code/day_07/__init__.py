@@ -32,7 +32,8 @@ CARD_TO_VALUE_MAPPING = {
     "A": "14",
     "K": "13",
     "Q": "12",
-    "J": "11",
+    "J": "01",
+    # "J": "11",  # uncomment this line for part 1
     "T": "10",
     "9": "09",
     "8": "08",
@@ -42,6 +43,7 @@ CARD_TO_VALUE_MAPPING = {
     "4": "04",
     "3": "03",
     "2": "02",
+
 }
 
 
@@ -55,28 +57,36 @@ class Hand(BaseModel):
 
     def _get_winning_card_type(self) -> CardType:
         dict_of_characters: dict[str, int] = {}
+        num_jacks = 0
 
         # count all the characters in the str
         for character in list(self.cards):
-            v = dict_of_characters.setdefault(character, 0)
-            dict_of_characters[character] = v + 1
+            if character == "J":
+                num_jacks += 1
+            else:
+                v = dict_of_characters.setdefault(character, 0)
+                dict_of_characters[character] = v + 1
+
+        # if the hand is "JJJJJ"
+        if len(dict_of_characters) == 0:
+            return CardType.five_of_a_kind
 
         # get the max value
         max_value = max(dict_of_characters.values())
 
-        if max_value == 5:
+        if max_value == 5 - num_jacks:
             return CardType.five_of_a_kind
 
-        elif max_value == 4:
+        elif max_value == 4 - num_jacks:
             return CardType.four_of_a_kind
 
-        elif max_value == 3:
+        elif max_value == 3 - num_jacks:
             if len(dict_of_characters) == 2:
                 return CardType.full_house
             else:
                 return CardType.three_of_a_kind
 
-        elif max_value == 2:
+        elif max_value == 2 - num_jacks:
             if len(dict_of_characters) == 3:
                 return CardType.two_pair
             else:
