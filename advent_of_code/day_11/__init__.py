@@ -90,5 +90,4 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Part 2 is incorrect.")
     main()
