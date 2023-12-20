@@ -1,5 +1,4 @@
 import itertools
-from copy import deepcopy
 
 from advent_of_code.puzzle_input.offline_repo import OfflinePuzzleInputRepository
 
@@ -79,7 +78,9 @@ def main():
                 g1=g1, g2=g2
             )
             total_distance_part_2 += distance_determiner.get_distance_between_galaxies(
-                g1=g1, g2=g2, expansion_factor=1000000
+                g1=g1,
+                g2=g2,
+                expansion_factor=999999,
             )
         except StopIteration:
             break
@@ -89,5 +90,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Part 2 is incorrect.")  # the answer I'm getting for part 2 is incorrect.
+    print("Part 2 is incorrect.")
     main()
