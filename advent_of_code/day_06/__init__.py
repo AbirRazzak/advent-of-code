@@ -74,7 +74,7 @@ class RaceInfo(BaseModel):
     distance_to_beat: int
 
 
-def get_race_info(puzzle_input: str) -> list[RaceInfo]:
+def get_race_info_part_1(puzzle_input: str) -> list[RaceInfo]:
     lines = puzzle_input.splitlines()
 
     total_times = [int(s) for s in lines[0].split("Time:", 1)[1].split()]
@@ -86,19 +86,36 @@ def get_race_info(puzzle_input: str) -> list[RaceInfo]:
     ]
 
 
+def get_race_info_part_2(puzzle_input: str) -> RaceInfo:
+    lines = puzzle_input.splitlines()
+
+    total_time = int(lines[0].split("Time:", 1)[1].replace(" ", ""))
+    distance_to_beat = int(lines[1].split("Distance:", 1)[1].replace(" ", ""))
+
+    return RaceInfo(total_time=total_time, distance_to_beat=distance_to_beat)
+
+
 def main():
     puzzle_repo = OfflinePuzzleInputRepository()
     puzzle_input = puzzle_repo.get_puzzle_input(day=6)
-    race_infos = get_race_info(puzzle_input)
 
+    race_infos_part_1 = get_race_info_part_1(puzzle_input)
     part_1_answer = 1
-    for race_info in race_infos:
+    for race_info in race_infos_part_1:
         part_1_answer *= find_number_of_ways_to_win(
             total_time=race_info.total_time,
             distance_to_beat=race_info.distance_to_beat,
         )
 
     print(f"Part 1: {part_1_answer}")
+
+    race_info_part_2 = get_race_info_part_2(puzzle_input)
+    part_2_answer = find_number_of_ways_to_win(
+        total_time=race_info_part_2.total_time,
+        distance_to_beat=race_info_part_2.distance_to_beat,
+    )
+
+    print(f"Part 2: {part_2_answer}")
 
 
 if __name__ == "__main__":
