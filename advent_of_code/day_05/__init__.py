@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import itertools
+
 from pydantic import BaseModel
 
 from advent_of_code.puzzle_input.offline_repo import OfflinePuzzleInputRepository
@@ -26,16 +28,33 @@ class AlmanacMapItem(BaseModel):
         return self.destination_range_start + (number - self.source_range_start)
 
 
+class AlmanacMap(BaseModel):
+    items: list[AlmanacMapItem]
+    number_to_destination_cache: dict[int, int] = {}
+
+    def get_destination_for_number(self, number: int) -> int:
+        # if number in self.number_to_destination_cache:
+        #     return self.number_to_destination_cache[number]
+
+        for i in self.items:
+            if i.is_number_in_range(number=number):
+                destination = i.get_destination_for_number(number=number)
+                # self.number_to_destination_cache[number] = destination
+                return destination
+
+        return number
+
+
 class Almanac(BaseModel):
     seeds: list[int]  # used in part 1
-    # seed_pairs: list[tuple[int, int]]  # used in part 2
-    seed_to_soil_map: list[AlmanacMapItem]
-    soil_to_fertilizer_map: list[AlmanacMapItem]
-    fertilizer_to_water_map: list[AlmanacMapItem]
-    water_to_light_map: list[AlmanacMapItem]
-    light_to_temperature_map: list[AlmanacMapItem]
-    temperature_to_humidity_map: list[AlmanacMapItem]
-    humidity_to_location_map: list[AlmanacMapItem]
+    seed_pairs: list[tuple[int, int]]  # used in part 2
+    seed_to_soil_map: AlmanacMap
+    soil_to_fertilizer_map: AlmanacMap
+    fertilizer_to_water_map: AlmanacMap
+    water_to_light_map: AlmanacMap
+    light_to_temperature_map: AlmanacMap
+    temperature_to_humidity_map: AlmanacMap
+    humidity_to_location_map: AlmanacMap
 
     @staticmethod
     def from_puzzle_input(puzzle: str) -> Almanac:
@@ -48,7 +67,7 @@ class Almanac(BaseModel):
             if line.startswith("seeds: "):
                 seeds_str = line.split(": ", maxsplit=1)[1]
                 seeds = [int(x) for x in seeds_str.split()]
-                # seed_pairs = itertools.batched(seeds, 2)
+                seed_pairs = itertools.batched(seeds, 2)
 
             elif line == "":
                 # first blank line should be after the seeds line, so index would be 0
@@ -69,44 +88,31 @@ class Almanac(BaseModel):
 
         return Almanac(
             seeds=seeds,
-            # seed_pairs=seed_pairs,
-            seed_to_soil_map=almanac_lists[0],
-            soil_to_fertilizer_map=almanac_lists[1],
-            fertilizer_to_water_map=almanac_lists[2],
-            water_to_light_map=almanac_lists[3],
-            light_to_temperature_map=almanac_lists[4],
-            temperature_to_humidity_map=almanac_lists[5],
-            humidity_to_location_map=almanac_lists[6],
+            seed_pairs=seed_pairs,
+            seed_to_soil_map=AlmanacMap(items=almanac_lists[0]),
+            soil_to_fertilizer_map=AlmanacMap(items=almanac_lists[1]),
+            fertilizer_to_water_map=AlmanacMap(items=almanac_lists[2]),
+            water_to_light_map=AlmanacMap(items=almanac_lists[3]),
+            light_to_temperature_map=AlmanacMap(items=almanac_lists[4]),
+            temperature_to_humidity_map=AlmanacMap(items=almanac_lists[5]),
+            humidity_to_location_map=AlmanacMap(items=almanac_lists[6]),
         )
-
-    def get_destination_for_number(
-        self, number: int, maps: list[AlmanacMapItem]
-    ) -> int:
-        for m in maps:
-            if m.is_number_in_range(number=number):
-                return m.get_destination_for_number(number=number)
-
-        return number
 
     def get_location_for_seed(self, seed: int) -> int:
-        soil = self.get_destination_for_number(number=seed, maps=self.seed_to_soil_map)
-        fertilizer = self.get_destination_for_number(
-            number=soil, maps=self.soil_to_fertilizer_map
+        soil = self.seed_to_soil_map.get_destination_for_number(number=seed)
+        fertilizer = self.soil_to_fertilizer_map.get_destination_for_number(number=soil)
+        water = self.fertilizer_to_water_map.get_destination_for_number(
+            number=fertilizer
         )
-        water = self.get_destination_for_number(
-            number=fertilizer, maps=self.fertilizer_to_water_map
+        light = self.water_to_light_map.get_destination_for_number(number=water)
+        temperature = self.light_to_temperature_map.get_destination_for_number(
+            number=light
         )
-        light = self.get_destination_for_number(
-            number=water, maps=self.water_to_light_map
+        humidity = self.temperature_to_humidity_map.get_destination_for_number(
+            number=temperature
         )
-        temperature = self.get_destination_for_number(
-            number=light, maps=self.light_to_temperature_map
-        )
-        humidity = self.get_destination_for_number(
-            number=temperature, maps=self.temperature_to_humidity_map
-        )
-        location = self.get_destination_for_number(
-            number=humidity, maps=self.humidity_to_location_map
+        location = self.humidity_to_location_map.get_destination_for_number(
+            number=humidity
         )
 
         return location
@@ -128,6 +134,41 @@ class Almanac(BaseModel):
 
         return lowest_location
 
+    def get_lowest_location_with_a_seed_from_pairs(self) -> int:
+        lowest_location: int = -1
+        seeds_to_check: set[int] = set()
+
+        # for starting_number, number_range in self.seed_pairs:
+        #     for number in range(starting_number, starting_number + number_range):
+        #         seeds_to_check.add(number)
+        #         print(seeds_to_check)
+        #
+        # print(seeds_to_check)
+        #
+        # for number in seeds_to_check:
+        #     location = self.get_location_for_seed(seed=number)
+        #
+        #     if lowest_location == -1 or location < lowest_location:
+        #         lowest_location = location
+
+        for starting_number, number_range in self.seed_pairs:
+            location_map = map(
+                self.get_location_for_seed,
+                range(starting_number, starting_number + number_range),
+            )
+            while True:
+                try:
+                    location = next(location_map)
+                    # print(f"{location}; lowest: {lowest_location}")
+
+                    if lowest_location == -1 or location < lowest_location:
+                        lowest_location = location
+
+                except StopIteration:
+                    continue
+
+        return lowest_location
+
 
 def main():
     input_repo = OfflinePuzzleInputRepository()
@@ -138,6 +179,10 @@ def main():
 
     print(
         f"Part 1 - Seed with lowest location: {almanac.get_lowest_location_with_a_seed()}"
+    )
+
+    print(
+        f"Part 2 - Seed with lowest location (from pairs): {almanac.get_lowest_location_with_a_seed_from_pairs()}"
     )
 
 
