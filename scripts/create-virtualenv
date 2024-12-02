@@ -1,0 +1,68 @@
+#!/bin/bash -ex
+
+# https://stackoverflow.com/a/246128
+# get current directory of script, regardless of how i'm being executed
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )/"
+PROJECT_ROOT="$(dirname "$DIR")"
+VENV_NAME=${VENV_NAME:-$(basename "${PROJECT_ROOT}")}
+PY_VERSION=${PY_VERSION:-3.12.0}
+
+function test-python-install {
+    pyenv shell "${PY_VERSION}"
+
+    if ! python --version; then
+        # Attempt reinstall.
+        pyenv uninstall --force "${PY_VERSION}"
+        pyenv install --force "${PY_VERSION}"
+        pyenv shell "${PY_VERSION}"
+        python --version  # If this fails, going to need to take some action.
+    fi
+
+    pyenv shell --unset
+}
+
+# pyenv won't do much without init
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+eval "$(pyenv init --path)"
+
+cd "${PROJECT_ROOT}"
+
+if pyenv activate "${VENV_NAME}" 2>&1 | grep 'not installed'; then
+
+    CURRENT_PY_VERSION="$(python --version 2>&1 | cut -d " " -f 2)"
+
+    # Recreate venv if we're specifying a python version other than what's activated.
+    if [[ "$PY_VERSION" != "$CURRENT_PY_VERSION" ]]; then
+        pyenv uninstall --force "${VENV_NAME}"
+        pyenv install --skip-existing "${PY_VERSION}"
+
+        test-python-install
+
+        pyenv virtualenv --force "${PY_VERSION}" "${VENV_NAME}"
+    fi
+
+else
+    # Venv doesn't exist yet; install and create it.
+    pyenv install --skip-existing "${PY_VERSION}"
+
+    test-python-install
+
+    pyenv virtualenv --force "${PY_VERSION}" "${VENV_NAME}"
+fi
+
+pyenv local "${VENV_NAME}"
+pyenv activate "${VENV_NAME}"
+
+# Upgrade pip related things
+pip install --upgrade pip setuptools wheel
+
+# Upgrade pip-tools to make sure we have latest/greatest before syncing.
+pip install --upgrade pip-tools
+
+#export PIP_INDEX_URL="https://${FURY_AUTH}@pypi.fury.io/picwell/"
+#export PIP_EXTRA_INDEX_URL=https://pypi.org/simple/
+
+pip-sync "${PROJECT_ROOT}/requirements.txt"
+
+pipdeptree
